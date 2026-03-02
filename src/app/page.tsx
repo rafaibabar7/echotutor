@@ -148,13 +148,15 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: updatedMessages.map((m) => ({
+          // Send only the last 20 messages to avoid exceeding Claude's context limit.
+          // The user still sees all messages on screen, but the API only processes recent ones.
+          messages: updatedMessages.slice(-20).map((m) => ({
             role: m.role,
             content: m.content,
           })),
           mode,
         }),
-      });
+        });
 
       if (!response.ok) throw new Error("API request failed");
 

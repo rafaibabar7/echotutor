@@ -557,7 +557,29 @@ export default function Home() {
                   )}
                 </div>
               )}
-
+{/* Loading indicator while generating */}
+              {isLoading && !quizQuestion && (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <svg
+                    className="animate-spin mb-4"
+                    width="36"
+                    height="36"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--teal-500)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  >
+                    <path d="M12 2a10 10 0 0 1 10 10" />
+                  </svg>
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    Generating board-style question...
+                  </p>
+                </div>
+              )}
               {/* Quiz error display */}
               {quizError && !quizQuestion && (
                 <div

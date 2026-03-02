@@ -101,6 +101,7 @@ export default function Home() {
   const [quizScore, setQuizScore] = useState({ correct: 0, total: 0 });
   const [quizDomain, setQuizDomain] = useState(QUIZ_DOMAINS[0]);
   const [quizDifficulty, setQuizDifficulty] = useState(QUIZ_DIFFICULTIES[1]);
+  const [quizError, setQuizError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -195,6 +196,7 @@ export default function Home() {
     setQuizQuestion(null);
     setSelectedAnswer(null);
     setShowExplanation(false);
+    setQuizError(null);
 
     try {
       const response = await fetch("/api/chat", {
@@ -223,7 +225,12 @@ export default function Home() {
       setQuizQuestion(parsed);
     } catch (error) {
       console.error("Quiz generation error:", error);
-      alert("Failed to generate question. Please try again.");
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Unknown error occurred";
+      setQuizError(
+        `Failed to generate question. Click "Generate Question" to try again. If it keeps failing, try a different domain. (${errorMessage})`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -548,6 +555,20 @@ export default function Home() {
                       </button>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Quiz error display */}
+              {quizError && !quizQuestion && (
+                <div
+                  className="p-4 rounded-xl border text-sm"
+                  style={{
+                    background: "var(--red-100)",
+                    borderColor: "var(--red-500)",
+                    color: "var(--red-700)",
+                  }}
+                >
+                  ⚠️ {quizError}
                 </div>
               )}
 

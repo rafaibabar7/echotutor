@@ -19,19 +19,63 @@ export async function POST(request: Request) {
     const systemPrompt = PROMPT_MAP[mode] || TUTOR_MODE_PROMPT;
 
     // For quiz mode, we don't stream — we need the full JSON response
+    // RETRY LOGIC: If Claude returns malformed JSON, we retry up to 2 more times.
+    // This handles the ~5% of responses where Claude wraps JSON in markdown or adds preamble.
     if (mode === "quiz") {
-      const response = await anthropic.messages.create({
-        model: "claude-sonnet-4-5-20250929",
-        max_tokens: 2000,
-        system: systemPrompt,
-        messages: messages,
-        temperature: 0.4,
-      });
+      const MAX_RETRIES = 2;
+      let lastError = "";
 
-      const textContent = response.content.find((block) => block.type === "text");
-      const text = textContent ? textContent.text : "";
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const response = await anthropic.messages.create({
+            model: "claude-sonnet-4-5-20250929",
+            max_tokens: 2000,
+            system: systemPrompt,
+            messages: messages,
+            temperature: 0.4,
+          });
 
-      return Response.json({ content: text });
+          const textContent = response.content.find(
+            (block) => block.type === "text"
+          );
+          const text = textContent ? textContent.text : "";
+
+          if (!text) {
+            throw new Error("Empty response from Claude");
+          }
+
+          // Clean markdown fences if present, then parse
+          const cleaned = text
+            .replace(/```json\s*/g, "")
+            .replace(/```\s*/g, "")
+            .trim();
+
+          const jsonStart = cleaned.indexOf("{");
+          const jsonEnd = cleaned.lastIndexOf("}");
+
+          if (jsonStart === -1 || jsonEnd === -1) {
+            throw new Error("No JSON object found in response");
+          }
+
+          const jsonString = cleaned.substring(jsonStart, jsonEnd + 1);
+          JSON.parse(jsonString); // Validate it's valid JSON — throws if not
+
+          return Response.json({ content: jsonString });
+        } catch (error) {
+          lastError = error instanceof Error ? error.message : "Unknown error";
+          console.warn(`Quiz attempt ${attempt + 1} failed: ${lastError}`);
+
+          if (attempt === MAX_RETRIES) {
+            return Response.json(
+              { error: `Failed to generate quiz after ${MAX_RETRIES + 1} attempts: ${lastError}` },
+              { status: 422 }
+            );
+          }
+
+          // Brief pause before retry
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
     }
 
     // For all other modes, stream the response

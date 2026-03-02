@@ -1,26 +1,128 @@
+/* src/app/globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @import "tailwindcss";
 
+/* ============================
+   EchoTutor — Design System
+   ============================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core palette */
+  --navy-950: #0a0f1a;
+  --navy-900: #0f172a;
+  --navy-800: #1a2332;
+  --navy-700: #243044;
+  --navy-600: #334155;
+  --navy-400: #7b8ba3;
+  --navy-300: #94a3b8;
+  --navy-200: #c5cdd8;
+  --navy-100: #e2e8f0;
+  --navy-50: #f1f5f9;
+  --teal-500: #0ea5e9;
+  --teal-400: #38bdf8;
+  --teal-300: #7dd3fc;
+  --teal-600: #0284c7;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-700: #b45309;
+  --amber-800: #92400e;
+  --red-100: #fee2e2;
+  --red-500: #ef4444;
+  --red-700: #b91c1c;
+  --green-100: #dcfce7;
+  --green-500: #22c55e;
+  --green-700: #15803d;
+  --surface: #ffffff;
+  --surface-hover: #f8fafc;
+  --border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-primary);
+  background: var(--navy-50);
+  -webkit-font-smoothing: antialiased;
 }
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+code, pre {
+  font-family: 'JetBrains Mono', monospace;
+}
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--navy-300);
+  border-radius: 3px;
+}
+/* Markdown content styling */
+.markdown-content h1 { font-size: 1.5rem; font-weight: 700; margin: 1.25rem 0 0.75rem; color: var(--navy-900); }
+.markdown-content h2 { font-size: 1.25rem; font-weight: 700; margin: 1rem 0 0.5rem; color: var(--navy-900); }
+.markdown-content h3 { font-size: 1.1rem; font-weight: 600; margin: 0.875rem 0 0.5rem; color: var(--navy-800); }
+.markdown-content p { margin: 0.5rem 0; line-height: 1.7; }
+.markdown-content ul, .markdown-content ol { margin: 0.5rem 0 0.5rem 1.5rem; }
+.markdown-content li { margin: 0.25rem 0; line-height: 1.6; }
+.markdown-content strong { font-weight: 600; color: var(--navy-900); }
+.markdown-content code {
+  background: var(--navy-100);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+.markdown-content pre {
+  background: var(--navy-900);
+  color: var(--navy-100);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+}
+.markdown-content pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+.markdown-content th {
+  background: var(--navy-100);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+.markdown-content td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+}
+.markdown-content blockquote {
+  border-left: 3px solid var(--teal-500);
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: var(--text-secondary);
+}
+/* Pulse animation for streaming indicator */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse-slow {
+  animation: pulse 1.5s ease-in-out infinite;
 }

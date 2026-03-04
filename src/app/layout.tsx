@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-[var(--navy-50)]">{children}</body>
+      <body style={{ background: "#F9FAFB" }}>{children}</body>
     </html>
   );
 }

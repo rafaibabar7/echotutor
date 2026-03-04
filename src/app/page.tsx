@@ -7,7 +7,7 @@ import ReactMarkdown from "react-markdown";
 // ============================================================
 // TYPES
 // ============================================================
-type Mode = "tutor" | "quiz" | "scenario" | "reference";
+type Mode = "tutor" | "quiz" | "scenario" | "reference" | "guidelines";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -25,34 +25,31 @@ interface QuizQuestion {
 }
 
 // ============================================================
-// MODE CONFIGURATION
+// CONFIGURATION
 // ============================================================
-const MODES: { key: Mode; label: string; icon: string; description: string }[] = [
-  {
-    key: "tutor",
-    label: "Tutor",
-    icon: "🎓",
-    description: "Ask anything about TEE & echocardiography",
-  },
-  {
-    key: "quiz",
-    label: "Quiz",
-    icon: "📝",
-    description: "Board-style MCQ practice",
-  },
-  {
-    key: "scenario",
-    label: "Scenario",
-    icon: "🏥",
-    description: "Perioperative clinical cases",
-  },
-  {
-    key: "reference",
-    label: "Reference",
-    icon: "📋",
-    description: "Quick lookup: values, views, formulas",
-  },
+const NAV_ITEMS: { key: Mode; label: string; icon: string; section: "modes" | "resources" }[] = [
+  { key: "tutor", label: "Tutor", icon: "📖", section: "modes" },
+  { key: "quiz", label: "Quiz", icon: "✎", section: "modes" },
+  { key: "scenario", label: "Scenarios", icon: "🏥", section: "modes" },
+  { key: "reference", label: "Reference", icon: "⊞", section: "modes" },
+  { key: "guidelines", label: "Guidelines", icon: "📄", section: "resources" },
 ];
+
+const MODE_TITLES: Record<Mode, string> = {
+  tutor: "Tutor",
+  quiz: "Quiz",
+  scenario: "Clinical Scenarios",
+  reference: "Quick Reference",
+  guidelines: "Guidelines",
+};
+
+const MODE_DESCRIPTIONS: Record<Mode, string> = {
+  tutor: "Ask anything about TEE & echocardiography",
+  quiz: "Board-style multiple choice questions",
+  scenario: "Interactive perioperative cases",
+  reference: "Normal values, views, and formulas",
+  guidelines: "ASE/SCA & AHA/ACC clinical guidelines",
+};
 
 const QUIZ_DOMAINS = [
   "Physics & Instrumentation",
@@ -65,14 +62,13 @@ const QUIZ_DOMAINS = [
 
 const QUIZ_DIFFICULTIES = ["Foundation", "Intermediate", "Advanced"];
 
-const SUGGESTED_PROMPTS: Record<Mode, string[]> = {
+const SUGGESTED_PROMPTS: Record<string, string[]> = {
   tutor: [
-    "Walk me through the ME four-chamber view — what structures do I see and what am I looking for?",
-    "Explain the Carpentier classification of mitral regurgitation with clinical examples",
-    "How do I assess diastolic function step by step using the ASE algorithm?",
-    "What is the difference between primary and secondary MR and why does it matter for surgery?",
+    "Walk me through the ME four-chamber view — what structures do I see?",
+    "Explain the Carpentier classification of mitral regurgitation",
+    "How do I assess diastolic function using the ASE algorithm?",
+    "What is the difference between primary and secondary MR?",
   ],
-  quiz: [],
   scenario: [
     "Give me a case involving mitral valve repair assessment",
     "Present a scenario with post-CPB hemodynamic instability",
@@ -88,9 +84,106 @@ const SUGGESTED_PROMPTS: Record<Mode, string[]> = {
 };
 
 // ============================================================
+// GUIDELINES DATA (PDFs in public/guidelines/)
+// ============================================================
+const GUIDELINES = [
+  {
+    id: "ase-sca-2013-comprehensive",
+    title: "Comprehensive Intraoperative Multiplane TEE",
+    org: "ASE / SCA",
+    year: 2013,
+    description: "Defines the 28-view comprehensive TEE examination — the foundation for all intraoperative TEE.",
+    pdf: "/guidelines/ase-sca-2013-comprehensive-tee.pdf",
+    tags: ["TEE", "28 Views", "Intraoperative"],
+  },
+  {
+    id: "ase-sca-2013-basic",
+    title: "Basic Perioperative TEE Exam",
+    org: "ASE / SCA",
+    year: 2013,
+    description: "Defines the 11-view basic perioperative TEE examination for non-cardiac surgery and basic certification.",
+    pdf: "/guidelines/ase-sca-2013-basic-tee.pdf",
+    tags: ["TEE", "Basic Exam", "11 Views"],
+  },
+  {
+    id: "ase-2015-chamber",
+    title: "Cardiac Chamber Quantification",
+    org: "ASE / EACVI",
+    year: 2015,
+    description: "Normal values for all cardiac chambers — LV dimensions, EF, LA volume, RV function parameters.",
+    pdf: "/guidelines/ase-2015-chamber-quantification.pdf",
+    tags: ["Normal Values", "LV", "RV", "Quantification"],
+  },
+  {
+    id: "aha-acc-2020-vhd",
+    title: "Management of Valvular Heart Disease",
+    org: "AHA / ACC",
+    year: 2020,
+    description: "Classification and management of all valve diseases. Defines mild/moderate/severe grading criteria.",
+    pdf: "/guidelines/aha-acc-2020-valvular-heart-disease.pdf",
+    tags: ["Valve Disease", "AS", "MR", "AR", "TR"],
+  },
+  {
+    id: "ase-2016-diastolic",
+    title: "LV Diastolic Function Evaluation",
+    org: "ASE / EACVI",
+    year: 2016,
+    description: "Diastolic function algorithm: E/A ratio, e\u2019 velocity, E/e\u2019 ratio, TR velocity, LA volume index.",
+    pdf: "/guidelines/ase-2016-diastolic-function.pdf",
+    tags: ["Diastolic Function", "E/e\u2019", "Algorithm"],
+  },
+  {
+    id: "ase-2010-right-heart",
+    title: "Echocardiographic Assessment of the Right Heart",
+    org: "ASE",
+    year: 2010,
+    description: "RV function assessment: TAPSE, FAC, S\u2019, RV strain. Ties to BIDMC AI-based RV function research.",
+    pdf: "/guidelines/ase-2010-right-heart.pdf",
+    tags: ["Right Heart", "RV", "TAPSE", "FAC"],
+  },
+  {
+    id: "sca-2020-noncardiac",
+    title: "TEE in Noncardiac Surgery",
+    org: "SCA / ASE",
+    year: 2020,
+    description: "Expanding indications for intraoperative TEE beyond the cardiac operating room.",
+    pdf: "/guidelines/sca-2020-tee-noncardiac.pdf",
+    tags: ["Noncardiac Surgery", "Indications"],
+  },
+  {
+    id: "ase-2025-reporting",
+    title: "Standardized Reporting of Echo Findings",
+    org: "ASE",
+    year: 2025,
+    description: "Newest ASE guideline \u2014 standardized language and structure for echocardiographic reports.",
+    pdf: "/guidelines/ase-2025-standardized-reporting.pdf",
+    tags: ["Reporting", "Standardization", "Newest"],
+  },
+  {
+    id: "ase-2017-regurgitation",
+    title: "Native Valvular Regurgitation Evaluation",
+    org: "ASE",
+    year: 2017,
+    description: "Quantitative assessment of MR, AR, TR: PISA method, vena contracta, EROA, regurgitant volume.",
+    pdf: "/guidelines/ase-2017-valvular-regurgitation.pdf",
+    tags: ["MR", "AR", "TR", "PISA", "EROA"],
+  },
+  {
+    id: "bidmc-2022-mv",
+    title: "Algorithmic MV Assessment (BIDMC)",
+    org: "BIDMC Valve Research Group",
+    year: 2022,
+    description: "Dr. Mahmood\u2019s stepwise approach to MV assessment \u2014 Carpentier classification, scallop analysis, repairability.",
+    pdf: "/guidelines/bidmc-2022-mv-assessment.pdf",
+    tags: ["Mitral Valve", "BIDMC", "Carpentier"],
+  },
+];
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 export default function Home() {
+  const [showLanding, setShowLanding] = useState(true);
   const [mode, setMode] = useState<Mode>("tutor");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -109,686 +202,471 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+  useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 
-  // Reset state when switching modes
-  const handleModeChange = (newMode: Mode) => {
-    setMode(newMode);
+  const switchMode = (m: Mode) => {
+    setMode(m);
     setMessages([]);
     setInput("");
     setQuizQuestion(null);
     setSelectedAnswer(null);
     setShowExplanation(false);
-    if (newMode !== "quiz") {
-      // Keep quiz score persistent
-    }
+    setQuizError(null);
   };
 
-  // ============================================================
-  // CHAT HANDLER (Tutor, Scenario, Reference modes)
-  // ============================================================
-  const handleSendMessage = async (overrideInput?: string) => {
-    const messageText = overrideInput || input;
-    if (!messageText.trim() || isLoading) return;
-
-    const userMessage: ChatMessage = { role: "user", content: messageText.trim() };
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
+  // ── Chat ──
+  const sendMessage = async (overrideInput?: string) => {
+    const text = overrideInput || input;
+    if (!text.trim() || isLoading) return;
+    const userMsg: ChatMessage = { role: "user", content: text.trim() };
+    const updated = [...messages, userMsg];
+    setMessages(updated);
     setInput("");
     setIsLoading(true);
-
-    // Add a placeholder for the assistant's response
-    const assistantPlaceholder: ChatMessage = { role: "assistant", content: "" };
-    setMessages([...updatedMessages, assistantPlaceholder]);
-
+    setMessages([...updated, { role: "assistant", content: "" }]);
     try {
-      const response = await fetch("/api/chat", {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          // Send only the last 20 messages to avoid exceeding Claude's context limit.
-          // The user still sees all messages on screen, but the API only processes recent ones.
-          messages: updatedMessages.slice(-20).map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          mode,
-        }),
-        });
-
-      if (!response.ok) throw new Error("API request failed");
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response body");
-
+        body: JSON.stringify({ messages: updated.slice(-20).map((m) => ({ role: m.role, content: m.content })), mode }),
+      });
+      if (!res.ok) throw new Error("API error");
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("No body");
       const decoder = new TextDecoder();
-      let accumulated = "";
-
+      let acc = "";
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
-        accumulated += decoder.decode(value, { stream: true });
-        setMessages([
-          ...updatedMessages,
-          { role: "assistant", content: accumulated },
-        ]);
+        acc += decoder.decode(value, { stream: true });
+        setMessages([...updated, { role: "assistant", content: acc }]);
       }
-    } catch (error) {
-      console.error("Error:", error);
-      setMessages([
-        ...updatedMessages,
-        {
-          role: "assistant",
-          content: "I encountered an error. Please try again.",
-        },
-      ]);
+    } catch {
+      setMessages([...updated, { role: "assistant", content: "Something went wrong. Please try again." }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ============================================================
-  // QUIZ HANDLER
-  // ============================================================
-  const handleGenerateQuiz = async () => {
+  // ── Quiz ──
+  const generateQuiz = async () => {
     setIsLoading(true);
     setQuizQuestion(null);
     setSelectedAnswer(null);
     setShowExplanation(false);
     setQuizError(null);
-
     try {
-      const response = await fetch("/api/chat", {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: `Generate a ${quizDifficulty} difficulty board-style question about ${quizDomain}. Respond with ONLY the JSON object, no markdown formatting.`,
-            },
-          ],
+          messages: [{ role: "user", content: `Generate a ${quizDifficulty} difficulty board-style question about ${quizDomain}. Respond with ONLY the JSON object, no markdown formatting.` }],
           mode: "quiz",
         }),
       });
-
-      if (!response.ok) throw new Error("API request failed");
-
-      const data = await response.json();
-      let content = data.content;
-
-      // Clean up any markdown formatting
-      content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
-
-      const parsed: QuizQuestion = JSON.parse(content);
-      setQuizQuestion(parsed);
-    } catch (error) {
-      console.error("Quiz generation error:", error);
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Unknown error occurred";
-      setQuizError(
-        `Failed to generate question. Click "Generate Question" to try again. If it keeps failing, try a different domain. (${errorMessage})`
-      );
+      if (!res.ok) throw new Error("API error");
+      const data = await res.json();
+      const content = data.content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+      setQuizQuestion(JSON.parse(content));
+    } catch {
+      setQuizError("Failed to generate question. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSubmitAnswer = () => {
+  const submitAnswer = () => {
     if (selectedAnswer === null || !quizQuestion) return;
     setShowExplanation(true);
-    setQuizScore((prev) => ({
-      correct:
-        prev.correct + (selectedAnswer === quizQuestion.correctAnswer ? 1 : 0),
-      total: prev.total + 1,
+    setQuizScore((p) => ({
+      correct: p.correct + (selectedAnswer === quizQuestion.correctAnswer ? 1 : 0),
+      total: p.total + 1,
     }));
   };
 
-  // ============================================================
-  // KEY HANDLER
-  // ============================================================
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
   // ============================================================
-  // RENDER
+  // LANDING PAGE
   // ============================================================
-  return (
-    <div className="flex flex-col h-screen max-h-screen overflow-hidden">
-      {/* ==================== HEADER ==================== */}
-      <header
-        className="flex-shrink-0 border-b"
-        style={{
-          background: "var(--navy-900)",
-          borderColor: "var(--navy-700)",
-        }}
-      >
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-              style={{ background: "var(--teal-500)" }}
-            >
-              ET
+  if (showLanding) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-page)" }}>
+        <div className="flex-1 flex flex-col items-center justify-center px-6">
+          <div className="flex flex-col items-center text-center max-w-3xl">
+            <img src="/EchoTutor_logo.png" alt="EchoTutor — Perioperative Echocardiography Education" className="w-80 sm:w-[28rem] h-80 sm:h-[28rem] mb-12 object-contain animate-fade-in" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-2xl mt-14 animate-fade-in animate-delay-3">
+              {NAV_ITEMS.filter((n) => n.section === "modes").map((m) => (
+                <div key={m.key} className="p-6 rounded-2xl text-left" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
+                  <p className="text-base font-semibold mb-1.5" style={{ color: "var(--text-primary)" }}>{m.label}</p>
+                  <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{MODE_DESCRIPTIONS[m.key]}</p>
+                </div>
+              ))}
             </div>
-            <div>
-              <h1
-                className="text-lg font-bold tracking-tight"
-                style={{
-                  color: "white",
-                  fontFamily: "Plus Jakarta Sans, sans-serif",
-                }}
-              >
-                EchoTutor
-              </h1>
-              <p
-                className="text-xs"
-                style={{ color: "var(--navy-400)" }}
-              >
-                Valve Research Group, BIDMC — Harvard Medical School
-              </p>
-            </div>
+            <button onClick={() => setShowLanding(false)}
+              className="mt-14 px-10 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 active:scale-[0.98] animate-fade-in animate-delay-4"
+              style={{ background: "var(--accent)", color: "var(--text-on-accent)", boxShadow: "0 4px 14px rgba(0, 119, 182, 0.3)" }}>
+              Start Learning →
+            </button>
           </div>
-          {mode === "quiz" && quizScore.total > 0 && (
-            <div
-              className="text-sm px-3 py-1 rounded-full"
-              style={{
-                background: "var(--navy-700)",
-                color: "var(--teal-400)",
-              }}
-            >
-              Score: {quizScore.correct}/{quizScore.total} (
-              {Math.round((quizScore.correct / quizScore.total) * 100)}%)
-            </div>
-          )}
         </div>
-      </header>
-
-      {/* ==================== MODE SELECTOR ==================== */}
-      <div
-        className="flex-shrink-0 border-b"
-        style={{ background: "white", borderColor: "var(--border)" }}
-      >
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex gap-1 py-2 overflow-x-auto">
-            {MODES.map((m) => (
-              <button
-                key={m.key}
-                onClick={() => handleModeChange(m.key)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap"
-                style={{
-                  background:
-                    mode === m.key ? "var(--navy-900)" : "transparent",
-                  color: mode === m.key ? "white" : "var(--text-secondary)",
-                }}
-              >
-                <span>{m.icon}</span>
-                <span>{m.label}</span>
-              </button>
-            ))}
-          </div>
+        <div className="text-center py-6 text-sm" style={{ color: "var(--text-muted)", borderTop: "1px solid var(--border)" }}>
+          Grounded in ASE/SCA Guidelines · Educational use only · Not a clinical tool
         </div>
       </div>
+    );
+  }
 
-      {/* ==================== MAIN CONTENT ==================== */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 py-6">
-          {/* QUIZ MODE */}
-          {mode === "quiz" ? (
-            <div className="space-y-6">
-              {/* Quiz controls */}
-              <div
-                className="p-4 rounded-xl border"
-                style={{
-                  background: "white",
-                  borderColor: "var(--border)",
-                }}
-              >
-                <div className="flex flex-wrap gap-3 items-end">
-                  <div className="flex-1 min-w-[180px]">
-                    <label
-                      className="block text-xs font-semibold mb-1 uppercase tracking-wide"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      Domain
-                    </label>
-                    <select
-                      value={quizDomain}
-                      onChange={(e) => setQuizDomain(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border text-sm"
-                      style={{
-                        borderColor: "var(--border)",
-                        background: "var(--navy-50)",
-                      }}
-                    >
-                      {QUIZ_DOMAINS.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="min-w-[150px]">
-                    <label
-                      className="block text-xs font-semibold mb-1 uppercase tracking-wide"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      Difficulty
-                    </label>
-                    <select
-                      value={quizDifficulty}
-                      onChange={(e) => setQuizDifficulty(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border text-sm"
-                      style={{
-                        borderColor: "var(--border)",
-                        background: "var(--navy-50)",
-                      }}
-                    >
-                      {QUIZ_DIFFICULTIES.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <button
-                    onClick={handleGenerateQuiz}
-                    disabled={isLoading}
-                    className="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all"
-                    style={{
-                      background: isLoading
-                        ? "var(--navy-400)"
-                        : "var(--teal-500)",
-                    }}
-                  >
-                    {isLoading ? "Generating..." : "Generate Question"}
-                  </button>
-                </div>
-              </div>
+  // ============================================================
+  // MAIN APP
+  // ============================================================
+  const modeNav = NAV_ITEMS.filter((n) => n.section === "modes");
+  const resourceNav = NAV_ITEMS.filter((n) => n.section === "resources");
 
-              {/* Quiz question display */}
-              {quizQuestion && (
-                <div
-                  className="p-6 rounded-xl border"
+  return (
+    <div className="flex h-screen max-h-screen overflow-hidden" style={{ background: "var(--bg-page)" }}>
+
+      {/* ══════════ SIDEBAR ══════════ */}
+      <aside className="flex-shrink-0 flex flex-col h-full overflow-y-auto" style={{ width: 164, background: "var(--bg-sidebar)", borderRight: "1px solid var(--border-sidebar)" }}>
+
+        {/* Logo */}
+        <div className="flex flex-col items-center pt-5 pb-6 px-3">
+          <img src="/EchoTutor_logo.png" alt="EchoTutor" className="w-full h-auto object-contain" style={{ maxWidth: 140 }} />
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-2">
+          {/* Learning Modes */}
+          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            Learning Modes
+          </p>
+          <div className="space-y-0.5 mb-7">
+            {modeNav.map((item) => {
+              const active = mode === item.key;
+              return (
+                <button key={item.key} onClick={() => switchMode(item.key)}
+                  className="w-full text-left px-3 py-2.5 rounded-md text-[13px] transition-all flex items-center gap-2.5"
                   style={{
-                    background: "white",
-                    borderColor: "var(--border)",
-                  }}
-                >
-                  <div className="flex gap-2 mb-4">
-                    <span
-                      className="text-xs px-2 py-1 rounded-full font-medium"
-                      style={{
-                        background: "var(--navy-100)",
-                        color: "var(--navy-700)",
-                      }}
-                    >
-                      {quizQuestion.domain}
-                    </span>
-                    <span
-                      className="text-xs px-2 py-1 rounded-full font-medium"
-                      style={{
-                        background:
-                          quizQuestion.difficulty === "Advanced"
-                            ? "var(--red-100)"
-                            : quizQuestion.difficulty === "Intermediate"
-                              ? "var(--amber-100)"
-                              : "var(--green-100)",
-                        color:
-                          quizQuestion.difficulty === "Advanced"
-                            ? "var(--red-700)"
-                            : quizQuestion.difficulty === "Intermediate"
-                              ? "var(--amber-700)"
-                              : "var(--green-700)",
-                      }}
-                    >
-                      {quizQuestion.difficulty}
-                    </span>
-                  </div>
+                    color: active ? "var(--accent)" : "var(--text-secondary)",
+                    fontWeight: active ? 600 : 400,
+                    background: active ? "var(--accent-50)" : "transparent",
+                    borderLeft: active ? "2.5px solid var(--accent)" : "2.5px solid transparent",
+                  }}>
+                  <span style={{ fontSize: 14, opacity: active ? 1 : 0.6 }}>{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
-                  <p
-                    className="text-base leading-relaxed mb-5"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    {quizQuestion.question}
-                  </p>
-
-                  <div className="space-y-2 mb-5">
-                    {quizQuestion.options.map((option, idx) => {
-                      let optionStyle: React.CSSProperties = {
-                        background: "var(--navy-50)",
-                        borderColor: "var(--border)",
-                        color: "var(--text-primary)",
-                      };
-
-                      if (showExplanation) {
-                        if (idx === quizQuestion.correctAnswer) {
-                          optionStyle = {
-                            background: "var(--green-100)",
-                            borderColor: "var(--green-500)",
-                            color: "var(--green-700)",
-                          };
-                        } else if (
-                          idx === selectedAnswer &&
-                          idx !== quizQuestion.correctAnswer
-                        ) {
-                          optionStyle = {
-                            background: "var(--red-100)",
-                            borderColor: "var(--red-500)",
-                            color: "var(--red-700)",
-                          };
-                        }
-                      } else if (idx === selectedAnswer) {
-                        optionStyle = {
-                          background: "white",
-                          borderColor: "var(--teal-500)",
-                          color: "var(--text-primary)",
-                        };
-                      }
-
-                      return (
-                        <button
-                          key={idx}
-                          onClick={() =>
-                            !showExplanation && setSelectedAnswer(idx)
-                          }
-                          disabled={showExplanation}
-                          className="w-full text-left px-4 py-3 rounded-lg border-2 text-sm transition-all"
-                          style={optionStyle}
-                        >
-                          {option}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {!showExplanation ? (
-                    <button
-                      onClick={handleSubmitAnswer}
-                      disabled={selectedAnswer === null}
-                      className="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all"
-                      style={{
-                        background:
-                          selectedAnswer === null
-                            ? "var(--navy-300)"
-                            : "var(--teal-500)",
-                      }}
-                    >
-                      Submit Answer
-                    </button>
-                  ) : (
-                    <div className="space-y-4 mt-4">
-                      <div
-                        className="p-4 rounded-lg text-sm leading-relaxed"
-                        style={{
-                          background: "var(--navy-50)",
-                          color: "var(--text-primary)",
-                        }}
-                      >
-                        <p className="font-bold mb-2" style={{ fontFamily: "Plus Jakarta Sans" }}>
-                          Explanation
-                        </p>
-                        <p>{quizQuestion.explanation}</p>
-                      </div>
-                      <div
-                        className="p-4 rounded-lg text-sm leading-relaxed"
-                        style={{
-                          background: "var(--amber-100)",
-                          color: "var(--amber-800)",
-                        }}
-                      >
-                        <p className="font-bold mb-1">💡 Clinical Pearl</p>
-                        <p>{quizQuestion.clinicalPearl}</p>
-                      </div>
-                      <button
-                        onClick={handleGenerateQuiz}
-                        className="px-5 py-2 rounded-lg text-sm font-semibold text-white"
-                        style={{ background: "var(--teal-500)" }}
-                      >
-                        Next Question →
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-{/* Loading indicator while generating */}
-              {isLoading && !quizQuestion && (
-                <div className="flex flex-col items-center justify-center py-16">
-                  <svg
-                    className="animate-spin mb-4"
-                    width="36"
-                    height="36"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="var(--teal-500)"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  >
-                    <path d="M12 2a10 10 0 0 1 10 10" />
-                  </svg>
-                  <p
-                    className="text-sm font-medium"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    Generating board-style question...
-                  </p>
-                </div>
-              )}
-              {/* Quiz error display */}
-              {quizError && !quizQuestion && (
-                <div
-                  className="p-4 rounded-xl border text-sm"
+          {/* Resources */}
+          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            Resources
+          </p>
+          <div className="space-y-0.5">
+            {resourceNav.map((item) => {
+              const active = mode === item.key;
+              return (
+                <button key={item.key} onClick={() => switchMode(item.key)}
+                  className="w-full text-left px-3 py-2.5 rounded-md text-[13px] transition-all flex items-center gap-2.5"
                   style={{
-                    background: "var(--red-100)",
-                    borderColor: "var(--red-500)",
-                    color: "var(--red-700)",
-                  }}
-                >
-                  ⚠️ {quizError}
-                </div>
-              )}
+                    color: active ? "var(--accent)" : "var(--text-secondary)",
+                    fontWeight: active ? 600 : 400,
+                    background: active ? "var(--accent-50)" : "transparent",
+                    borderLeft: active ? "2.5px solid var(--accent)" : "2.5px solid transparent",
+                  }}>
+                  <span style={{ fontSize: 14, opacity: active ? 1 : 0.6 }}>{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
 
-              {/* Empty state */}
-              {!quizQuestion && !isLoading && (
-                <div className="text-center py-16">
-                  <p className="text-5xl mb-4">📝</p>
-                  <p
-                    className="text-lg font-semibold mb-2"
-                    style={{ fontFamily: "Plus Jakarta Sans" }}
-                  >
-                    Board-Style Quiz
-                  </p>
-                  <p
-                    className="text-sm max-w-md mx-auto"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    Select a domain and difficulty, then click Generate Question
-                    to start practicing. Questions follow the NBE PTEeXAM
-                    format.
-                  </p>
-                </div>
-              )}
+        {/* Footer */}
+        <div className="px-4 py-4" style={{ borderTop: "1px solid var(--border-light)" }}>
+          <p className="text-[10px] text-center leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            Educational use only
+            <br />
+            ASE/SCA Guidelines
+          </p>
+        </div>
+      </aside>
+
+      {/* ══════════ MAIN ══════════ */}
+      <div className="flex-1 flex flex-col min-w-0">
+
+        {/* Top bar */}
+        <header className="flex-shrink-0 flex items-center justify-between px-10 py-5" style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
+              {MODE_TITLES[mode]}
+            </h1>
+            <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
+              {MODE_DESCRIPTIONS[mode]}
+            </p>
+          </div>
+          {mode === "quiz" && quizScore.total > 0 && (
+            <div className="text-sm px-4 py-2 rounded-lg font-semibold" style={{ background: "var(--accent-50)", color: "var(--accent)" }}>
+              {quizScore.correct}/{quizScore.total} · {Math.round((quizScore.correct / quizScore.total) * 100)}%
             </div>
-          ) : (
-            /* CHAT MODES (Tutor, Scenario, Reference) */
-            <div className="space-y-4">
-              {messages.length === 0 && !isLoading ? (
-                /* Empty state with suggested prompts */
-                <div className="py-12">
-                  <div className="text-center mb-8">
-                    <p className="text-5xl mb-4">
-                      {MODES.find((m) => m.key === mode)?.icon}
-                    </p>
-                    <p
-                      className="text-xl font-bold mb-2"
-                      style={{ fontFamily: "Plus Jakarta Sans" }}
-                    >
-                      {mode === "tutor" && "Welcome to EchoTutor"}
-                      {mode === "scenario" && "Clinical Scenario Mode"}
-                      {mode === "reference" && "Quick Reference"}
-                    </p>
-                    <p
-                      className="text-sm max-w-lg mx-auto"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      {mode === "tutor" &&
-                        "Ask me anything about perioperative echocardiography, TEE, cardiac anesthesia, or hemodynamics. I'm grounded in ASE/SCA guidelines."}
-                      {mode === "scenario" &&
-                        "I'll present you with a perioperative case and guide you through clinical decision-making step by step."}
-                      {mode === "reference" &&
-                        "Quick, concise lookups for normal values, grading criteria, TEE views, and hemodynamic formulas."}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                    {SUGGESTED_PROMPTS[mode]?.map((prompt, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSendMessage(prompt)}
-                        className="text-left px-4 py-3 rounded-xl border text-sm transition-all hover:border-[var(--teal-500)]"
-                        style={{
-                          background: "white",
-                          borderColor: "var(--border)",
-                          color: "var(--text-secondary)",
-                        }}
-                      >
-                        {prompt}
-                      </button>
+          )}
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-3xl mx-auto px-10 py-10">
+
+            {/* ════ GUIDELINES ════ */}
+            {mode === "guidelines" ? (
+              <div className="space-y-5">
+                <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  Core echocardiography and valve disease guidelines. Click any guideline to open the PDF.
+                </p>
+                {GUIDELINES.map((g) => (
+                  <a key={g.id} href={g.pdf} target="_blank" rel="noopener noreferrer"
+                    className="block p-7 rounded-xl transition-all"
+                    style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "var(--shadow-md)"; e.currentTarget.style.borderColor = "var(--accent)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "var(--shadow-sm)"; e.currentTarget.style.borderColor = "var(--border)"; }}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>{g.org}</span>
+                          <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>{g.year}</span>
+                        </div>
+                        <h3 className="text-[15px] font-semibold mb-1.5" style={{ color: "var(--text-primary)" }}>{g.title}</h3>
+                        <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>{g.description}</p>
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {g.tags.map((t) => (
+                            <span key={t} className="text-[11px] px-2 py-0.5 rounded" style={{ background: "var(--gray-100)", color: "var(--gray-500)" }}>{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <span className="text-sm font-medium flex-shrink-0 mt-1" style={{ color: "var(--accent)" }}>Open PDF →</span>
+                    </div>
+                  </a>
+                ))}
+
+                {/* BIDMC section */}
+                <div className="mt-10 p-8 rounded-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+                  <h3 className="text-lg font-bold mb-2 text-center" style={{ color: "var(--text-primary)" }}>Research Contributions</h3>
+                  <p className="text-sm text-center mb-6" style={{ color: "var(--text-secondary)" }}>
+                    Research contributions integrated into EchoTutor.
+                  </p>
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { title: "MV Assessment", desc: "Algorithmic intraoperative mitral valve evaluation" },
+                      { title: "3D Tricuspid", desc: "Tricuspid annular geometry via 3D TEE" },
+                      { title: "AI in Echo", desc: "LLM performance on echo board questions" },
+                    ].map((item) => (
+                      <div key={item.title} className="p-4 rounded-lg text-center" style={{ background: "var(--gray-50)", border: "1px solid var(--border)" }}>
+                        <p className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>{item.title}</p>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>{item.desc}</p>
+                      </div>
                     ))}
                   </div>
                 </div>
-              ) : (
-                /* Message list */
-                messages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[85%] px-5 py-3 rounded-2xl text-sm leading-relaxed ${
-                        msg.role === "user" ? "rounded-br-md" : "rounded-bl-md"
-                      }`}
-                      style={
-                        msg.role === "user"
-                          ? {
-                              background: "var(--navy-900)",
-                              color: "white",
-                            }
-                          : {
-                              background: "white",
-                              border: "1px solid var(--border)",
-                              color: "var(--text-primary)",
-                            }
-                      }
-                    >
-                      {msg.role === "assistant" ? (
-                        msg.content ? (
-                          <div className="markdown-content">
-                            <ReactMarkdown>{msg.content}</ReactMarkdown>
-                          </div>
-                        ) : (
-                          <span
-                            className="animate-pulse-slow inline-block"
-                            style={{ color: "var(--text-muted)" }}
-                          >
-                            Thinking...
-                          </span>
-                        )
-                      ) : (
-                        <p>{msg.content}</p>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
-      </main>
+              </div>
 
-      {/* ==================== INPUT BAR ==================== */}
-      {mode !== "quiz" && (
-        <div
-          className="flex-shrink-0 border-t"
-          style={{ background: "white", borderColor: "var(--border)" }}
-        >
-          <div className="max-w-3xl mx-auto px-4 py-3">
-            <div
-              className="flex items-end gap-3 p-2 rounded-xl border"
-              style={{
-                background: "var(--navy-50)",
-                borderColor: "var(--border)",
-              }}
-            >
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                  mode === "tutor"
-                    ? "Ask about TEE views, valve disease, hemodynamics..."
-                    : mode === "scenario"
-                      ? "Respond to the scenario or request a new case..."
-                      : "Look up values, views, formulas..."
-                }
-                rows={1}
-                className="flex-1 resize-none bg-transparent outline-none text-sm py-2 px-2"
-                style={{
-                  color: "var(--text-primary)",
-                  maxHeight: "120px",
-                }}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = "auto";
-                  target.style.height = target.scrollHeight + "px";
-                }}
-              />
-              <button
-                onClick={() => handleSendMessage()}
-                disabled={!input.trim() || isLoading}
-                className="p-2 rounded-lg transition-all flex-shrink-0"
-                style={{
-                  background:
-                    !input.trim() || isLoading
-                      ? "var(--navy-200)"
-                      : "var(--teal-500)",
-                  color: "white",
-                }}
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="22" y1="2" x2="11" y2="13" />
-                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                </svg>
-              </button>
-            </div>
-            <p
-              className="text-xs mt-2 text-center"
-              style={{ color: "var(--text-muted)" }}
-            >
-              EchoTutor is for educational purposes only. Not a clinical tool.
-              Grounded in ASE/SCA Guidelines.
-            </p>
+            ) : mode === "quiz" ? (
+              /* ════ QUIZ ════ */
+              <div className="space-y-8">
+                {/* Controls */}
+                <div className="p-8 rounded-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+                  <div className="flex flex-wrap gap-5 items-end">
+                    <div className="flex-1 min-w-[200px]">
+                      <label className="block text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Domain</label>
+                      <select value={quizDomain} onChange={(e) => setQuizDomain(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg text-sm" style={{ border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-primary)" }}>
+                        {QUIZ_DOMAINS.map((d) => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <div className="min-w-[150px]">
+                      <label className="block text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Difficulty</label>
+                      <select value={quizDifficulty} onChange={(e) => setQuizDifficulty(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg text-sm" style={{ border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-primary)" }}>
+                        {QUIZ_DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <button onClick={generateQuiz} disabled={isLoading}
+                      className="px-7 py-3 rounded-lg text-sm font-semibold transition-all"
+                      style={{ background: isLoading ? "var(--gray-300)" : "var(--accent)", color: "var(--text-on-accent)" }}>
+                      {isLoading ? "Generating..." : "Generate Question"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Loading */}
+                {isLoading && !quizQuestion && (
+                  <div className="flex flex-col items-center py-20">
+                    <svg className="animate-spin mb-3" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round"><path d="M12 2a10 10 0 0 1 10 10" /></svg>
+                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>Generating board-style question...</p>
+                  </div>
+                )}
+
+                {/* Question */}
+                {quizQuestion && (
+                  <div className="p-8 rounded-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+                    <div className="flex gap-2 mb-5">
+                      <span className="text-xs px-2.5 py-1 rounded font-medium" style={{ background: "var(--gray-100)", color: "var(--gray-600)" }}>{quizQuestion.domain}</span>
+                      <span className="text-xs px-2.5 py-1 rounded font-medium" style={{
+                        background: quizQuestion.difficulty === "Advanced" ? "var(--error-light)" : quizQuestion.difficulty === "Intermediate" ? "var(--amber-light)" : "var(--success-light)",
+                        color: quizQuestion.difficulty === "Advanced" ? "var(--error)" : quizQuestion.difficulty === "Intermediate" ? "var(--amber)" : "var(--success)",
+                      }}>{quizQuestion.difficulty}</span>
+                    </div>
+                    <p className="text-[15px] leading-relaxed mb-7" style={{ color: "var(--text-primary)", lineHeight: 1.85 }}>{quizQuestion.question}</p>
+                    <div className="space-y-3 mb-7">
+                      {quizQuestion.options.map((opt, i) => {
+                        let bg = "var(--bg-page)", border = "var(--border)", color = "var(--text-primary)";
+                        if (showExplanation) {
+                          if (i === quizQuestion.correctAnswer) { bg = "var(--success-light)"; border = "var(--success)"; color = "var(--success)"; }
+                          else if (i === selectedAnswer) { bg = "var(--error-light)"; border = "var(--error)"; color = "var(--error)"; }
+                        } else if (i === selectedAnswer) { bg = "var(--accent-50)"; border = "var(--accent)"; color = "var(--text-primary)"; }
+                        return (
+                          <button key={i} onClick={() => !showExplanation && setSelectedAnswer(i)} disabled={showExplanation}
+                            className="w-full text-left px-5 py-4 rounded-lg text-sm transition-all"
+                            style={{ background: bg, border: `1.5px solid ${border}`, color, lineHeight: 1.7 }}>
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!showExplanation ? (
+                      <button onClick={submitAnswer} disabled={selectedAnswer === null}
+                        className="px-7 py-3 rounded-lg text-sm font-semibold"
+                        style={{ background: selectedAnswer === null ? "var(--gray-300)" : "var(--accent)", color: "var(--text-on-accent)" }}>
+                        Submit Answer
+                      </button>
+                    ) : (
+                      <div className="space-y-5 mt-6">
+                        <div className="p-6 rounded-lg" style={{ background: "var(--gray-50)", lineHeight: 1.85 }}>
+                          <p className="text-sm font-bold mb-3" style={{ color: "var(--text-primary)" }}>Explanation</p>
+                          {quizQuestion.explanation
+                            .split(/(?=[A-E] is (?:in)?correct)/g)
+                            .filter((s: string) => s.trim())
+                            .map((paragraph: string, pi: number) => (
+                              <p key={pi} className="text-sm mb-3 last:mb-0" style={{ color: "var(--text-secondary)" }}>{paragraph.trim()}</p>
+                            ))}
+                        </div>
+                        <div className="p-6 rounded-lg" style={{ background: "var(--amber-light)", border: "1px solid var(--amber-border)", lineHeight: 1.85 }}>
+                          <p className="text-sm font-bold mb-1" style={{ color: "var(--amber-dark)" }}>Clinical Pearl</p>
+                          <p className="text-sm" style={{ color: "var(--amber)" }}>{quizQuestion.clinicalPearl}</p>
+                        </div>
+                        <button onClick={generateQuiz}
+                          className="px-7 py-3 rounded-lg text-sm font-semibold"
+                          style={{ background: "var(--accent)", color: "var(--text-on-accent)" }}>
+                          Next Question →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {quizError && !quizQuestion && (
+                  <div className="p-6 rounded-lg" style={{ background: "var(--error-light)", border: "1px solid var(--error)" }}>
+                    <p className="text-sm" style={{ color: "var(--error)" }}>{quizError}</p>
+                  </div>
+                )}
+
+                {!quizQuestion && !isLoading && !quizError && (
+                  <div className="flex flex-col items-center text-center py-20">
+                    <p className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>Board-Style Quiz</p>
+                    <p className="text-sm max-w-sm" style={{ color: "var(--text-muted)", lineHeight: 1.7 }}>
+                      Select a domain and difficulty, then click Generate Question. Questions follow the NBE PTEeXAM format.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+            ) : (
+              /* ════ CHAT MODES (Tutor, Scenario, Reference) ════ */
+              <div className="space-y-6">
+                {messages.length === 0 && !isLoading ? (
+                  <>
+                    {/* Welcome */}
+                    <div className="py-8">
+                      <h2 className="text-2xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>
+                        {mode === "tutor" && "Welcome to EchoTutor"}
+                        {mode === "scenario" && "Clinical Scenarios"}
+                        {mode === "reference" && "Quick Reference"}
+                      </h2>
+                      <p className="text-sm" style={{ color: "var(--text-secondary)", lineHeight: 1.75 }}>
+                        {mode === "tutor" && "Ask anything about perioperative echocardiography, TEE, cardiac anesthesia, or hemodynamics."}
+                        {mode === "scenario" && "Interactive perioperative cases with staged decision-making. Practice clinical reasoning in a safe environment."}
+                        {mode === "reference" && "Quick, concise lookups for normal values, grading criteria, TEE views, and hemodynamic formulas."}
+                      </p>
+                    </div>
+                    {/* Suggestions */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {(SUGGESTED_PROMPTS[mode] || []).map((prompt, i) => (
+                        <button key={i} onClick={() => sendMessage(prompt)}
+                          className="text-left p-6 rounded-xl text-sm transition-all"
+                          style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", color: "var(--text-secondary)", lineHeight: 1.7 }}
+                          onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.boxShadow = "var(--shadow-md)"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.boxShadow = "var(--shadow-sm)"; }}>
+                          {prompt}
+                          <span className="block mt-3 text-xs font-semibold" style={{ color: "var(--accent)" }}>Ask this →</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  /* Messages */
+                  messages.map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[82%] px-6 py-4 rounded-2xl text-sm ${msg.role === "user" ? "rounded-br-lg" : "rounded-bl-lg"}`}
+                        style={msg.role === "user"
+                          ? { background: "var(--accent)", color: "var(--text-on-accent)" }
+                          : { background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", color: "var(--text-primary)" }
+                        }>
+                        {msg.role === "assistant" ? (
+                          msg.content ? <div className="markdown-content"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+                            : <span className="animate-pulse-slow" style={{ color: "var(--text-muted)" }}>Thinking...</span>
+                        ) : (
+                          <p style={{ lineHeight: 1.75 }}>{msg.content}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        </main>
+
+        {/* Input bar */}
+        {mode !== "quiz" && mode !== "guidelines" && (
+          <div className="flex-shrink-0" style={{ background: "var(--bg-card)", borderTop: "1px solid var(--border)" }}>
+            <div className="max-w-3xl mx-auto px-10 py-5">
+              <div className="flex items-end gap-3 p-3 rounded-xl" style={{ background: "var(--bg-input)", border: "1px solid var(--border)" }}>
+                <textarea ref={inputRef} value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={onKeyDown}
+                  placeholder={mode === "tutor" ? "Ask about TEE views, valve disease, hemodynamics..." : mode === "scenario" ? "Respond to the scenario or request a new case..." : "Look up values, views, formulas..."}
+                  rows={1}
+                  className="flex-1 resize-none bg-transparent outline-none text-sm py-2 px-2"
+                  style={{ color: "var(--text-primary)", maxHeight: "120px" }}
+                  onInput={(e) => { const t = e.target as HTMLTextAreaElement; t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }}
+                />
+                <button onClick={() => sendMessage()} disabled={!input.trim() || isLoading}
+                  className="p-2.5 rounded-lg transition-all flex-shrink-0"
+                  style={{ background: !input.trim() || isLoading ? "var(--gray-200)" : "var(--accent)", color: "var(--text-on-accent)" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </div>
+              <p className="text-[11px] mt-2 text-center" style={{ color: "var(--text-muted)" }}>
+                Educational use only · Grounded in ASE/SCA Guidelines · Not a clinical tool
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

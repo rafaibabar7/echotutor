@@ -35,7 +35,7 @@ function IconGuidelines() { return <svg width="20" height="20" viewBox="0 0 24 2
 function IconMic() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="1" width="6" height="11" rx="3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>; }
 function IconSend() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>; }
 
-const NAV_ICONS: Record<Mode, () => JSX.Element> = { tutor: IconTutor, quiz: IconQuiz, scenario: IconScenario, reference: IconReference, guidelines: IconGuidelines };
+const NAV_ICONS: Record<Mode, () => React.ReactNode> = { tutor: IconTutor, quiz: IconQuiz, scenario: IconScenario, reference: IconReference, guidelines: IconGuidelines };
 
 // ============================================================
 // CONFIGURATION
@@ -92,7 +92,8 @@ const GUIDELINES = [
 // ============================================================
 function useVoiceInput(onResult: (text: string) => void) {
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<ReturnType<typeof getSpeechRecognition> | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
 
   const toggle = useCallback(() => {
     if (isListening) {
@@ -100,14 +101,16 @@ function useVoiceInput(onResult: (text: string) => void) {
       setIsListening(false);
       return;
     }
-    const SR = getSpeechRecognition();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR = typeof window !== "undefined" ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition : null;
     if (!SR) { alert("Voice input is not supported in this browser. Try Chrome or Safari."); return; }
     const recognition = new SR();
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = "en-US";
-    recognition.onresult = (e: { results: { transcript: string }[][] }) => {
-      const transcript = e.results[0]?.[0]?.transcript;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (e: any) => {
+      const transcript = e.results?.[0]?.[0]?.transcript;
       if (transcript) onResult(transcript);
       setIsListening(false);
     };
@@ -119,12 +122,6 @@ function useVoiceInput(onResult: (text: string) => void) {
   }, [isListening, onResult]);
 
   return { isListening, toggle };
-}
-
-function getSpeechRecognition(): (new () => { continuous: boolean; interimResults: boolean; lang: string; onresult: ((e: { results: { transcript: string }[][] }) => void) | null; onerror: (() => void) | null; onend: (() => void) | null; start: () => void; stop: () => void }) | null {
-  if (typeof window === "undefined") return null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
 }
 
 // ============================================================
@@ -139,7 +136,7 @@ function InputBar({ input, setInput, onSend, isLoading, placeholder }: {
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isListening, toggle: toggleVoice } = useVoiceInput((text) => {
-    setInput((prev: string) => prev ? prev + " " + text : text);
+    setInput(input ? input + " " + text : text);
   });
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

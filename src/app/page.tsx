@@ -27,19 +27,19 @@ interface QuizQuestion {
 // ============================================================
 // CONFIGURATION
 // ============================================================
-const NAV_ITEMS: { key: Mode; label: string; icon: string; section: "modes" | "resources" }[] = [
-  { key: "tutor", label: "Tutor", icon: "📖", section: "modes" },
-  { key: "quiz", label: "Quiz", icon: "✎", section: "modes" },
-  { key: "scenario", label: "Scenarios", icon: "🏥", section: "modes" },
-  { key: "reference", label: "Reference", icon: "⊞", section: "modes" },
-  { key: "guidelines", label: "Guidelines", icon: "📄", section: "resources" },
+const NAV_ITEMS: { key: Mode; label: string; section: "modes" | "resources" }[] = [
+  { key: "tutor", label: "Tutor Mode", section: "modes" },
+  { key: "quiz", label: "Quiz Mode", section: "modes" },
+  { key: "scenario", label: "Clinical Scenarios", section: "modes" },
+  { key: "reference", label: "Reference Library", section: "modes" },
+  { key: "guidelines", label: "Guidelines", section: "resources" },
 ];
 
 const MODE_TITLES: Record<Mode, string> = {
-  tutor: "Tutor",
-  quiz: "Quiz",
+  tutor: "Tutor Mode",
+  quiz: "Quiz Mode",
   scenario: "Clinical Scenarios",
-  reference: "Quick Reference",
+  reference: "Reference Library",
   guidelines: "Guidelines",
 };
 
@@ -84,100 +84,35 @@ const SUGGESTED_PROMPTS: Record<string, string[]> = {
 };
 
 // ============================================================
-// GUIDELINES DATA (PDFs in public/guidelines/)
+// GUIDELINES DATA
 // ============================================================
 const GUIDELINES = [
-  {
-    id: "ase-sca-2013-comprehensive",
-    title: "Comprehensive Intraoperative Multiplane TEE",
-    org: "ASE / SCA",
-    year: 2013,
-    description: "Defines the 28-view comprehensive TEE examination — the foundation for all intraoperative TEE.",
-    pdf: "/guidelines/ase-sca-2013-comprehensive-tee.pdf",
-    tags: ["TEE", "28 Views", "Intraoperative"],
-  },
-  {
-    id: "ase-sca-2013-basic",
-    title: "Basic Perioperative TEE Exam",
-    org: "ASE / SCA",
-    year: 2013,
-    description: "Defines the 11-view basic perioperative TEE examination for non-cardiac surgery and basic certification.",
-    pdf: "/guidelines/ase-sca-2013-basic-tee.pdf",
-    tags: ["TEE", "Basic Exam", "11 Views"],
-  },
-  {
-    id: "ase-2015-chamber",
-    title: "Cardiac Chamber Quantification",
-    org: "ASE / EACVI",
-    year: 2015,
-    description: "Normal values for all cardiac chambers — LV dimensions, EF, LA volume, RV function parameters.",
-    pdf: "/guidelines/ase-2015-chamber-quantification.pdf",
-    tags: ["Normal Values", "LV", "RV", "Quantification"],
-  },
-  {
-    id: "aha-acc-2020-vhd",
-    title: "Management of Valvular Heart Disease",
-    org: "AHA / ACC",
-    year: 2020,
-    description: "Classification and management of all valve diseases. Defines mild/moderate/severe grading criteria.",
-    pdf: "/guidelines/aha-acc-2020-valvular-heart-disease.pdf",
-    tags: ["Valve Disease", "AS", "MR", "AR", "TR"],
-  },
-  {
-    id: "ase-2016-diastolic",
-    title: "LV Diastolic Function Evaluation",
-    org: "ASE / EACVI",
-    year: 2016,
-    description: "Diastolic function algorithm: E/A ratio, e\u2019 velocity, E/e\u2019 ratio, TR velocity, LA volume index.",
-    pdf: "/guidelines/ase-2016-diastolic-function.pdf",
-    tags: ["Diastolic Function", "E/e\u2019", "Algorithm"],
-  },
-  {
-    id: "ase-2010-right-heart",
-    title: "Echocardiographic Assessment of the Right Heart",
-    org: "ASE",
-    year: 2010,
-    description: "RV function assessment: TAPSE, FAC, S\u2019, RV strain. Ties to BIDMC AI-based RV function research.",
-    pdf: "/guidelines/ase-2010-right-heart.pdf",
-    tags: ["Right Heart", "RV", "TAPSE", "FAC"],
-  },
-  {
-    id: "sca-2020-noncardiac",
-    title: "TEE in Noncardiac Surgery",
-    org: "SCA / ASE",
-    year: 2020,
-    description: "Expanding indications for intraoperative TEE beyond the cardiac operating room.",
-    pdf: "/guidelines/sca-2020-tee-noncardiac.pdf",
-    tags: ["Noncardiac Surgery", "Indications"],
-  },
-  {
-    id: "ase-2025-reporting",
-    title: "Standardized Reporting of Echo Findings",
-    org: "ASE",
-    year: 2025,
-    description: "Newest ASE guideline \u2014 standardized language and structure for echocardiographic reports.",
-    pdf: "/guidelines/ase-2025-standardized-reporting.pdf",
-    tags: ["Reporting", "Standardization", "Newest"],
-  },
-  {
-    id: "ase-2017-regurgitation",
-    title: "Native Valvular Regurgitation Evaluation",
-    org: "ASE",
-    year: 2017,
-    description: "Quantitative assessment of MR, AR, TR: PISA method, vena contracta, EROA, regurgitant volume.",
-    pdf: "/guidelines/ase-2017-valvular-regurgitation.pdf",
-    tags: ["MR", "AR", "TR", "PISA", "EROA"],
-  },
-  {
-    id: "bidmc-2022-mv",
-    title: "Algorithmic MV Assessment (BIDMC)",
-    org: "BIDMC Valve Research Group",
-    year: 2022,
-    description: "Dr. Mahmood\u2019s stepwise approach to MV assessment \u2014 Carpentier classification, scallop analysis, repairability.",
-    pdf: "/guidelines/bidmc-2022-mv-assessment.pdf",
-    tags: ["Mitral Valve", "BIDMC", "Carpentier"],
-  },
+  { id: "ase-sca-2013-comprehensive", title: "Comprehensive Intraoperative Multiplane TEE", org: "ASE / SCA", year: 2013, description: "Defines the 28-view comprehensive TEE examination.", pdf: "/guidelines/ase-sca-2013-comprehensive-tee.pdf", tags: ["TEE", "28 Views", "Intraoperative"] },
+  { id: "ase-sca-2013-basic", title: "Basic Perioperative TEE Exam", org: "ASE / SCA", year: 2013, description: "Defines the 11-view basic perioperative TEE examination.", pdf: "/guidelines/ase-sca-2013-basic-tee.pdf", tags: ["TEE", "Basic Exam", "11 Views"] },
+  { id: "ase-2015-chamber", title: "Cardiac Chamber Quantification", org: "ASE / EACVI", year: 2015, description: "Normal values for all cardiac chambers — LV, LA, RV, RA.", pdf: "/guidelines/ase-2015-chamber-quantification.pdf", tags: ["Normal Values", "LV", "RV"] },
+  { id: "aha-acc-2020-vhd", title: "Management of Valvular Heart Disease", org: "AHA / ACC", year: 2020, description: "Classification and management of all valve diseases.", pdf: "/guidelines/aha-acc-2020-valvular-heart-disease.pdf", tags: ["Valve Disease", "AS", "MR", "AR", "TR"] },
+  { id: "ase-2016-diastolic", title: "LV Diastolic Function Evaluation", org: "ASE / EACVI", year: 2016, description: "Diastolic function algorithm: E/A, e\u2019, E/e\u2019, TR velocity, LA volume.", pdf: "/guidelines/ase-2016-diastolic-function.pdf", tags: ["Diastolic Function", "E/e\u2019"] },
+  { id: "ase-2010-right-heart", title: "Echocardiographic Assessment of the Right Heart", org: "ASE", year: 2010, description: "RV function: TAPSE, FAC, S\u2019, RV strain.", pdf: "/guidelines/ase-2010-right-heart.pdf", tags: ["Right Heart", "RV", "TAPSE"] },
+  { id: "sca-2020-noncardiac", title: "TEE in Noncardiac Surgery", org: "SCA / ASE", year: 2020, description: "Expanding indications for intraoperative TEE.", pdf: "/guidelines/sca-2020-tee-noncardiac.pdf", tags: ["Noncardiac Surgery"] },
+  { id: "ase-2025-reporting", title: "Standardized Reporting of Echo Findings", org: "ASE", year: 2025, description: "Newest ASE guideline — standardized echo reports.", pdf: "/guidelines/ase-2025-standardized-reporting.pdf", tags: ["Reporting", "Newest"] },
+  { id: "ase-2017-regurgitation", title: "Native Valvular Regurgitation Evaluation", org: "ASE", year: 2017, description: "PISA, vena contracta, EROA, regurgitant volume.", pdf: "/guidelines/ase-2017-valvular-regurgitation.pdf", tags: ["MR", "AR", "TR", "PISA"] },
+  { id: "bidmc-2022-mv", title: "Algorithmic MV Assessment (BIDMC)", org: "BIDMC Research", year: 2022, description: "Stepwise MV assessment — Carpentier classification, scallop analysis.", pdf: "/guidelines/bidmc-2022-mv-assessment.pdf", tags: ["Mitral Valve", "Carpentier"] },
 ];
+
+// Sidebar icons as simple SVG components
+function IconTutor() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>; }
+function IconQuiz() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>; }
+function IconScenario() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>; }
+function IconReference() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>; }
+function IconGuidelines() { return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>; }
+
+const NAV_ICONS: Record<Mode, () => JSX.Element> = {
+  tutor: IconTutor,
+  quiz: IconQuiz,
+  scenario: IconScenario,
+  reference: IconReference,
+  guidelines: IconGuidelines,
+};
 
 // ============================================================
 // MAIN COMPONENT
@@ -297,7 +232,7 @@ export default function Home() {
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <div className="flex flex-col items-center text-center max-w-3xl">
             <img src="/EchoTutor_logo.png" alt="EchoTutor — Perioperative Echocardiography Education" className="w-80 sm:w-[28rem] h-80 sm:h-[28rem] mb-12 object-contain animate-fade-in" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-2xl mt-14 animate-fade-in animate-delay-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-2xl mt-2 animate-fade-in animate-delay-1">
               {NAV_ITEMS.filter((n) => n.section === "modes").map((m) => (
                 <div key={m.key} className="p-6 rounded-2xl text-left" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
                   <p className="text-base font-semibold mb-1.5" style={{ color: "var(--text-primary)" }}>{m.label}</p>
@@ -306,8 +241,8 @@ export default function Home() {
               ))}
             </div>
             <button onClick={() => setShowLanding(false)}
-              className="mt-14 px-10 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 active:scale-[0.98] animate-fade-in animate-delay-4"
-              style={{ background: "var(--accent)", color: "var(--text-on-accent)", boxShadow: "0 4px 14px rgba(0, 119, 182, 0.3)" }}>
+              className="mt-14 px-10 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 active:scale-[0.98] animate-fade-in animate-delay-2"
+              style={{ background: "var(--accent)", color: "var(--text-on-accent)", boxShadow: "0 4px 14px rgba(37, 99, 235, 0.3)" }}>
               Start Learning →
             </button>
           </div>
@@ -328,66 +263,57 @@ export default function Home() {
   return (
     <div className="flex h-screen max-h-screen overflow-hidden" style={{ background: "var(--bg-page)" }}>
 
-      {/* ══════════ SIDEBAR ══════════ */}
-      <aside className="flex-shrink-0 flex flex-col h-full overflow-y-auto" style={{ width: 164, background: "var(--bg-sidebar)", borderRight: "1px solid var(--border-sidebar)" }}>
+      {/* ══════════ DARK SIDEBAR ══════════ */}
+      <aside className="flex-shrink-0 flex flex-col h-full overflow-y-auto" style={{ width: 200, background: "var(--sidebar-bg)" }}>
 
         {/* Logo */}
-        <div className="flex flex-col items-center pt-5 pb-6 px-3">
-          <img src="/EchoTutor_logo.png" alt="EchoTutor" className="w-full h-auto object-contain" style={{ maxWidth: 140 }} />
+        <div className="flex flex-col items-center pt-6 pb-8 px-4" style={{ borderBottom: "1px solid var(--sidebar-border)" }}>
+          <img src="/EchoTutor_logo.png" alt="EchoTutor" className="w-24 h-24 object-contain" />
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-2">
-          {/* Learning Modes */}
-          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-            Learning Modes
-          </p>
-          <div className="space-y-0.5 mb-7">
-            {modeNav.map((item) => {
-              const active = mode === item.key;
-              return (
-                <button key={item.key} onClick={() => switchMode(item.key)}
-                  className="w-full text-left px-3 py-2.5 rounded-md text-[13px] transition-all flex items-center gap-2.5"
-                  style={{
-                    color: active ? "var(--accent)" : "var(--text-secondary)",
-                    fontWeight: active ? 600 : 400,
-                    background: active ? "var(--accent-50)" : "transparent",
-                    borderLeft: active ? "2.5px solid var(--accent)" : "2.5px solid transparent",
-                  }}>
-                  <span style={{ fontSize: 14, opacity: active ? 1 : 0.6 }}>{item.icon}</span>
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
+        <nav className="flex-1 px-3 pt-6">
+          {modeNav.map((item) => {
+            const active = mode === item.key;
+            const Icon = NAV_ICONS[item.key];
+            return (
+              <button key={item.key} onClick={() => switchMode(item.key)}
+                className="w-full text-left px-3 py-3 rounded-lg text-[13px] transition-all flex items-center gap-3 mb-1"
+                style={{
+                  color: active ? "var(--sidebar-text-active)" : "var(--sidebar-text)",
+                  fontWeight: active ? 600 : 400,
+                  background: active ? "var(--sidebar-active-bg)" : "transparent",
+                }}>
+                <span style={{ opacity: active ? 1 : 0.6 }}><Icon /></span>
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
 
-          {/* Resources */}
-          <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-            Resources
-          </p>
-          <div className="space-y-0.5">
-            {resourceNav.map((item) => {
-              const active = mode === item.key;
-              return (
-                <button key={item.key} onClick={() => switchMode(item.key)}
-                  className="w-full text-left px-3 py-2.5 rounded-md text-[13px] transition-all flex items-center gap-2.5"
-                  style={{
-                    color: active ? "var(--accent)" : "var(--text-secondary)",
-                    fontWeight: active ? 600 : 400,
-                    background: active ? "var(--accent-50)" : "transparent",
-                    borderLeft: active ? "2.5px solid var(--accent)" : "2.5px solid transparent",
-                  }}>
-                  <span style={{ fontSize: 14, opacity: active ? 1 : 0.6 }}>{item.icon}</span>
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
+          {/* Divider */}
+          <div className="my-5" style={{ borderTop: "1px solid var(--sidebar-border)" }} />
+
+          {resourceNav.map((item) => {
+            const active = mode === item.key;
+            const Icon = NAV_ICONS[item.key];
+            return (
+              <button key={item.key} onClick={() => switchMode(item.key)}
+                className="w-full text-left px-3 py-3 rounded-lg text-[13px] transition-all flex items-center gap-3 mb-1"
+                style={{
+                  color: active ? "var(--sidebar-text-active)" : "var(--sidebar-text)",
+                  fontWeight: active ? 600 : 400,
+                  background: active ? "var(--sidebar-active-bg)" : "transparent",
+                }}>
+                <span style={{ opacity: active ? 1 : 0.6 }}><Icon /></span>
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-4" style={{ borderTop: "1px solid var(--border-light)" }}>
-          <p className="text-[10px] text-center leading-relaxed" style={{ color: "var(--text-muted)" }}>
+        <div className="px-4 py-5" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
+          <p className="text-[10px] text-center leading-relaxed" style={{ color: "var(--sidebar-text)", opacity: 0.5 }}>
             Educational use only
             <br />
             ASE/SCA Guidelines
@@ -400,14 +326,9 @@ export default function Home() {
 
         {/* Top bar */}
         <header className="flex-shrink-0 flex items-center justify-between px-10 py-5" style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)" }}>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
-              {MODE_TITLES[mode]}
-            </h1>
-            <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
-              {MODE_DESCRIPTIONS[mode]}
-            </p>
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
+            {MODE_TITLES[mode]}
+          </h1>
           {mode === "quiz" && quizScore.total > 0 && (
             <div className="text-sm px-4 py-2 rounded-lg font-semibold" style={{ background: "var(--accent-50)", color: "var(--accent)" }}>
               {quizScore.correct}/{quizScore.total} · {Math.round((quizScore.correct / quizScore.total) * 100)}%
@@ -422,8 +343,8 @@ export default function Home() {
             {/* ════ GUIDELINES ════ */}
             {mode === "guidelines" ? (
               <div className="space-y-5">
-                <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  Core echocardiography and valve disease guidelines. Click any guideline to open the PDF.
+                <p className="text-sm leading-relaxed mb-2" style={{ color: "var(--text-secondary)" }}>
+                  Core echocardiography and valve disease guidelines. Click to open the PDF.
                 </p>
                 {GUIDELINES.map((g) => (
                   <a key={g.id} href={g.pdf} target="_blank" rel="noopener noreferrer"
@@ -450,7 +371,7 @@ export default function Home() {
                   </a>
                 ))}
 
-                {/* BIDMC section */}
+                {/* Research section */}
                 <div className="mt-10 p-8 rounded-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
                   <h3 className="text-lg font-bold mb-2 text-center" style={{ color: "var(--text-primary)" }}>Research Contributions</h3>
                   <p className="text-sm text-center mb-6" style={{ color: "var(--text-secondary)" }}>
@@ -474,7 +395,6 @@ export default function Home() {
             ) : mode === "quiz" ? (
               /* ════ QUIZ ════ */
               <div className="space-y-8">
-                {/* Controls */}
                 <div className="p-8 rounded-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
                   <div className="flex flex-wrap gap-5 items-end">
                     <div className="flex-1 min-w-[200px]">
@@ -499,7 +419,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Loading */}
                 {isLoading && !quizQuestion && (
                   <div className="flex flex-col items-center py-20">
                     <svg className="animate-spin mb-3" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round"><path d="M12 2a10 10 0 0 1 10 10" /></svg>
@@ -507,7 +426,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Question */}
                 {quizQuestion && (
                   <div className="p-8 rounded-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
                     <div className="flex gap-2 mb-5">
@@ -582,11 +500,10 @@ export default function Home() {
               </div>
 
             ) : (
-              /* ════ CHAT MODES (Tutor, Scenario, Reference) ════ */
+              /* ════ CHAT MODES ════ */
               <div className="space-y-6">
                 {messages.length === 0 && !isLoading ? (
                   <>
-                    {/* Welcome */}
                     <div className="py-8">
                       <h2 className="text-2xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>
                         {mode === "tutor" && "Welcome to EchoTutor"}
@@ -599,7 +516,6 @@ export default function Home() {
                         {mode === "reference" && "Quick, concise lookups for normal values, grading criteria, TEE views, and hemodynamic formulas."}
                       </p>
                     </div>
-                    {/* Suggestions */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {(SUGGESTED_PROMPTS[mode] || []).map((prompt, i) => (
                         <button key={i} onClick={() => sendMessage(prompt)}
@@ -614,7 +530,6 @@ export default function Home() {
                     </div>
                   </>
                 ) : (
-                  /* Messages */
                   messages.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[82%] px-6 py-4 rounded-2xl text-sm ${msg.role === "user" ? "rounded-br-lg" : "rounded-bl-lg"}`}
